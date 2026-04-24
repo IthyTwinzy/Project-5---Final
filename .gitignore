@@ -1,2 +1,12 @@
-.idea/
+# Python
 __pycache__/
+.venv
+
+# VS Code
+*.code-workspace
+
+# Pycharm
+.idea/
+
+# Secrets
+.env
