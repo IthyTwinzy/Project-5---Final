@@ -13,8 +13,7 @@ elif not requests.get(IPQS_URL + "json/account/" + IPQS_API_KEY).json().get("suc
 
 # Import routes
 with app.app_context():
-    # Put imports to any routes here
-    pass
+    import check_email
 
 if __name__ == "__main__":
     app.run(debug=True)

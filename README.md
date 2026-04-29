@@ -7,3 +7,4 @@ Email Scam and Phishing Detection
 - python-dotenv
 - requests
 - mcp\[cli\]
+- msal
