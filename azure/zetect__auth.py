@@ -5,7 +5,6 @@ import json
 CLIENT_ID = "0c60d083-5388-427f-85ce-de767ac8b818"
 AUTHORITY = "https://login.microsoftonline.com/common"
 SCOPES = ["Mail.Read"]
-
 CACHE_FILE = "token_cache.bin"
 
 def load_cache():
@@ -36,7 +35,7 @@ def get_token():
         if "user_code" not in flow:
             raise ValueError(f"Device flow creation failed: {json.dumps(flow, indent=2)}")
         print(flow["message"])# shows url + code; follow it and sign in
-    result = app.acquire_token_by_device_flow(flow)
+        result = app.acquire_token_by_device_flow(flow)
     save_cache(cache)
     if "access_token" in result:
         print("Auth OK. Scopes:", result.get("scope", "(no scopes in token)"))
