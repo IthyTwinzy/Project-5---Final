@@ -29,11 +29,10 @@ def check_email(email: str):
             fraud_score = "low_risk"
 
     # Prepairs simplified response
-    shared_keys = ["disposable", "leaked", "recent_abuse", "risky_tld", "valid", "spf_record", "dmarc_record"]
+    shared_keys = ["success", "disposable", "leaked", "recent_abuse", "risky_tld", "valid", "spf_record", "dmarc_record"]
     simplified_response = {x : response.get(x) for x in shared_keys}    
 
     simplified_response["fraud_score"] = fraud_score
     simplified_response["email_address_creation_date"] = response.get("first_seen").get("human")
     simplified_response["domain_creation_date"] = response.get("domain_age").get("human")
-
     return simplified_response
