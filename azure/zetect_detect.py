@@ -5,6 +5,7 @@ from html import unescape
 from dotenv import load_dotenv
 from openai import OpenAI
 from zetect_auth import get_token
+import json
 
 GRAPH_API_ENDPOINT = "https://graph.microsoft.com/v1.0/me/mailFolders/Inbox/messages"
 
@@ -25,7 +26,6 @@ def html_to_text(html):
 
     html = re.sub(r"(?i)</(p|div|br|li|h[1-6])>", "\n", html)
     html = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", html)
-
     text = re.sub(r"(?s)<[^>]+>", "", html)
     text = unescape(text)
 
@@ -96,7 +96,25 @@ def print_email_result(index, sender, subject, date, preview, ai_analysis):
     print("\nAI Analysis:")
     print(ai_analysis)
 
+def saveEmails(index, sender, subject, date, preview, ai_analysis):
+    data = {
+        'Email': index,
+        'Sender': sender,
+        'Received': date,
+        'Subject': subject,
+        "Preview": preview,
+        "AI analysis": ai_analysis
+    }
+    try:
+        with open("emails.json", "r") as e:
+            emails = json.load(e)
+    except (FileNotFoundError, json.JSONDecodeError):
+        emails = []  # start fresh if file is empty or broken
 
+    emails.append({index: data})
+
+    with open("emails.json", "w") as e:
+        json.dump(emails, e, indent=4)
 def main():
     """Fetch recent emails, analyze them with GPT, and print results."""
     token = get_token()
@@ -127,7 +145,8 @@ def main():
 
             ai_analysis = classify_with_gpt(sender, subject, body_text)
 
-            print_email_result(
+            emails= {}
+            saveEmails(
                 index=i,
                 sender=sender,
                 subject=subject,

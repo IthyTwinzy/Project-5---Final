@@ -14,3 +14,6 @@ zetect.env
 
 #Cache 
 token_cache.bin
+
+#Emails
+emails.json
