@@ -10,6 +10,7 @@ __pycache__/
 
 # Secrets
 .env
+zetect.env
 
 #Cache 
 token_cache.bin
