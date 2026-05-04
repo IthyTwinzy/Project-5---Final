@@ -1,21 +1,18 @@
 from flask import current_app as app
 import random
 
-@app.get("/check_email/<email>")
+# Returns fake data about the email (used for a demo but should not be used for any real purposes)
 def mock_check_email(email: str) -> dict:
     response: dict = {}
 
-    good_attributes = ["valid", "spf_record", "dmarc_record"]
+    good_attributes = ["Success", "valid", "spf_record", "dmarc_record"]
     bad_attributes = ["disposable", "leaked", "recent_abuse", "risky_tld"]
 
     # Makes email with all good attributes
-    response["Success"] = True
     response["domain_creation_date"] = f"{random.randint(10, 20)} years ago"
     response["email_address_creation_date"] = f"{random.randint(2, 10)} years ago"
     response = response | {x : True for x in good_attributes} | {x : False for x in bad_attributes}
     
-
-
     # Determines how malicouse the email should appear
     threat_level: int = random.randint(1,5)
 

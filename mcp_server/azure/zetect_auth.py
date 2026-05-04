@@ -1,12 +1,13 @@
 import os
 import json
 import msal
+from pathlib import Path
 
 CLIENT_ID = "0c60d083-5388-427f-85ce-de767ac8b818"
 AUTHORITY = "https://login.microsoftonline.com/common"
 SCOPES = ["Mail.Read"]
 
-CACHE_FILE = "token_cache.bin"
+CACHE_FILE = Path(__file__).parent.parent.parent / "token_cache.bin"
 
 
 def load_cache():
