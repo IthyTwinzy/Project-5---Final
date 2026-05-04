@@ -5,6 +5,7 @@ from user_prompts import email_threat_checker
 
 mcp = FastMCP("Email and Phishing Detection Server")
 mcp.add_tool(email_threat_checker)
+mcp.add_tool(testJsonReturn)
 if __name__ == "__main__":
     try:
         sys.stderr.write("server started\n")
