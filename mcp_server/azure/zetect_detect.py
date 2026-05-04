@@ -1,17 +1,15 @@
+from azure.zetect_auth import get_token
 import os
 import re
 import requests
 from html import unescape
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from openai import OpenAI
-from zetect_auth import get_token
-import json
+from pathlib import Path
 
 GRAPH_API_ENDPOINT = "https://graph.microsoft.com/v1.0/me/mailFolders/Inbox/messages"
 
-
-load_dotenv("zetect.env")
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = dotenv_values(Path(__file__).parent.parent.parent / "zetect.env").get("OPENAI_API_KEY")
 
 if not api_key:
     raise ValueError("OPENAI_API_KEY not found. Check your zetect.env file.")
@@ -59,7 +57,7 @@ def fetch_messages(token, top=10):
 def classify_with_gpt(sender, subject, body_text):
     """Send sender, subject, and body to GPT for phishing classification."""
     try:
-        with open("gpt_prompt.txt", "r", encoding="utf-8") as f:
+        with open(Path(__file__).parent.parent.parent / "gpt_prompt.txt", "r", encoding="utf-8") as f:
             base_prompt = f.read().strip()
     except FileNotFoundError:
         raise FileNotFoundError("gpt_prompt.txt not found.")
@@ -96,68 +94,40 @@ def print_email_result(index, sender, subject, date, preview, ai_analysis):
     print("\nAI Analysis:")
     print(ai_analysis)
 
-def saveEmails(index, sender, subject, date, preview, ai_analysis):
-    data = {
-        'Email': index,
-        'Sender': sender,
-        'Received': date,
-        'Subject': subject,
-        "Preview": preview,
-        "AI analysis": ai_analysis
-    }
-    try:
-        with open("emails.json", "r") as e:
-            emails = json.load(e)
-    except (FileNotFoundError, json.JSONDecodeError):
-        emails = []  # start fresh if file is empty or broken
-
-    emails.append({index: data})
-
-    with open("emails.json", "w") as e:
-        json.dump(emails, e, indent=4)
-def main():
-    """Fetch recent emails, analyze them with GPT, and print results."""
+def get_emails_and_analysis():
+    """Fetches recent emails, checks if they seem like scam, and return a dict with the emails and scam analysis."""
     token = get_token()
     messages = fetch_messages(token, top=10)
 
     if not messages:
-        print("No emails found.")
         return
 
-    print(f"\nZetect analyzed {len(messages)} recent emails.\n")
-
+    emails = {}
     for i, message in enumerate(messages, start=1):
-        try:
-            subject = message.get("subject") or "(no subject)"
 
-            sender_dict = message.get("from", {}).get("emailAddress", {})
-            sender = sender_dict.get("address", "(unknown)")
+        subject = message.get("subject") or "(no subject)"
 
-            date = message.get("receivedDateTime", "(unknown date)")
+        sender_dict = message.get("from", {}).get("emailAddress", {})
+        sender = sender_dict.get("address", "(unknown)")
 
-            body_obj = message.get("body") or {}
-            body_html = body_obj.get("content") or ""
-            body_text = html_to_text(body_html)
+        date = message.get("receivedDateTime", "(unknown date)")
 
-            preview = body_text[:240].replace("\n", " ").strip()
-            if len(body_text) > 240:
-                preview += "..."
+        body_obj = message.get("body") or {}
+        body_html = body_obj.get("content") or ""
+        body_text = html_to_text(body_html)
 
-            ai_analysis = classify_with_gpt(sender, subject, body_text)
+        preview = body_text[:240].replace("\n", " ").strip()
+        if len(body_text) > 240:
+            preview += "..."
 
-            emails= {}
-            saveEmails(
-                index=i,
-                sender=sender,
-                subject=subject,
-                date=date,
-                preview=preview,
-                ai_analysis=ai_analysis
-            )
+        ai_analysis = classify_with_gpt(sender, subject, body_text)
 
-        except Exception as e:
-            print(f"\nError processing email {i}: {e}")
+        emails[i] = {
+            "sender" : sender,
+            "subject" : subject,
+            "date" : date,
+            "preview" : preview,
+            "ai_analysis" : ai_analysis
+        }
 
-
-if __name__ == "__main__":
-    main()
+    return emails

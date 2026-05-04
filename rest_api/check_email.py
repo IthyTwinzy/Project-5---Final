@@ -19,10 +19,9 @@ def _get_fraud_string(fraud_score: float) -> str:
         case _:
             return "low_risk"
 
-
-@app.get("/check_email/<email>")
+# Uses IPQS API to help check if an email address is malicouse
 def check_email(email: str) -> dict:
-    """Returns JSON data about the risk of the specified email"""
+    """Returns JSON data about the risk of the specified email address"""
     
     response: dict = requests.get(f"{IPQS_URL}json/email/{IPQS_API_KEY}/{email}").json()
 
